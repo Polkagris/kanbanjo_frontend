@@ -5,6 +5,7 @@ import { CreateBoardButton } from "./components/CreateBoardButton";
 import { useState } from "react";
 import { loginUser } from "./queries/loginUser";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LogoutButton } from "./components/LogoutButton";
 
 export default function Home() {
   const [userPassword, setUserPassword] = useState("");
@@ -43,6 +44,7 @@ export default function Home() {
             userName={userName}
           />
           <CreateBoardButton />
+          <LogoutButton />
         </AuthProvider>
       </div>
     </div>

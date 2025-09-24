@@ -14,14 +14,6 @@ export const CreateBoardButton = () => {
   console.log("isAuthenticated i CreateButton:", isAuthenticated);
   console.log("user i CreateButton:", user);
 
-  /*   useEffect(() => {
-    refreshUser();
-  }, []); */
-  {
-    /* <Button onClick={() => createBoard("Arnes best board 2025")}>
-          Create new board
-        </Button> */
-  }
   return (
     <div>
       {isAuthenticated ? (

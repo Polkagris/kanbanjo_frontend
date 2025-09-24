@@ -65,55 +65,53 @@ const NewBoard = () => {
   }, []);
 
   const dialog = (
-    <TableCell className="border">
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline">Create Task</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create new task</DialogTitle>
-            <DialogDescription>
-              Add information for this specific task
-            </DialogDescription>
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex w-full">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={taskName}
-                  onChange={(e) => setTaskName(e.target.value)}
-                />
-              </div>
-              <div className="flex w-full">
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  value={taskDescription}
-                  onChange={(e) => setTaskDescription(e.target.value)}
-                />
-              </div>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline">Create Task</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Create new task</DialogTitle>
+          <DialogDescription>
+            Add information for this specific task
+          </DialogDescription>
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex w-full">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={taskName}
+                onChange={(e) => setTaskName(e.target.value)}
+              />
             </div>
-          </DialogHeader>
-          <DialogFooter className="sm:justify-start">
-            <Button
-              type="button"
-              variant="default"
-              onClick={() =>
-                createTask(taskName, taskDescription, user?.name, boardData.id)
-              }
-            >
-              Create
+            <div className="flex w-full">
+              <Label htmlFor="description">Description</Label>
+              <Input
+                id="description"
+                value={taskDescription}
+                onChange={(e) => setTaskDescription(e.target.value)}
+              />
+            </div>
+          </div>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-start">
+          <Button
+            type="button"
+            variant="default"
+            onClick={() =>
+              createTask(taskName, taskDescription, user?.name, boardData.id)
+            }
+          >
+            Create
+          </Button>
+          <DialogClose asChild>
+            <Button type="button" variant="secondary">
+              Close
             </Button>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary">
-                Close
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </TableCell>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 
   const board = boardData && (
@@ -133,10 +131,8 @@ const NewBoard = () => {
       <TableBody>
         <TableRow className="h-64">
           <TableCell className="border">
-            <div>
-              <div>{boardData?.tasks?.map((task) => task.name)}</div>
-              <div>{dialog}</div>
-            </div>
+            <div>{boardData?.tasks?.map((task) => task.name)}</div>
+            {dialog}
           </TableCell>
           <TableCell className="border"></TableCell>
           <TableCell className="border"></TableCell>
