@@ -5,46 +5,30 @@ import { loginUser } from "../queries/loginUser";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface loginType {
-  handleSubmit;
   userPassword: string;
-  userName;
-  setUserPassword;
-  setUserName;
+  userName: string;
+  setUserPassword: (arg: string) => void;
+  setUserName: (arg: string) => void;
 }
 
 export const LoginForm = ({
-  handleSubmit,
   userPassword,
   userName,
   setUserPassword,
   setUserName,
 }: loginType) => {
-  /*   const [userPassword, setUserPassword] = useState("");
-  const [userName, setUserName] = useState("");
-  const [userFromResponse, setUserFromResponse] = useState({});
+  const { refreshUser } = useAuth();
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     try {
-      const data = await loginUser(userName, userPassword);
-      setUserFromResponse(data);
+      await loginUser(userName, userPassword);
+      await refreshUser();
       setUserName("");
       setUserPassword("");
     } catch (error) {
-      console.error("Login error:", error);
-      throw new Error("Login failed to query API.");
+      console.error("Login failed", error);
     }
-  }; */
-  const { isAuthenticated, refreshUser, user, roles, loading } = useAuth();
-
-  console.log("isAuthenticated i CreateButton:", isAuthenticated);
-  console.log("user i CreateButton:", user);
-
-  /*   useEffect(() => {
-    refreshUser();
-  }, []); */
-  const refreshUserAfterLogin = async () => {
-    await refreshUser();
   };
 
   return (
@@ -74,7 +58,6 @@ export const LoginForm = ({
         <button
           className="bg-blue-500 hover:bg-blue-600 text-white p-5 cursor-pointer"
           type="submit"
-          onClick={() => refreshUserAfterLogin()}
         >
           Login
         </button>

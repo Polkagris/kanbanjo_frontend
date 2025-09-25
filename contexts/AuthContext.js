@@ -33,10 +33,14 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch(userInfoUrl, { credentials: "include" });
+      const response = await fetch(userInfoUrl, {
+        credentials: "include",
+        cache: "no-store",
+      });
 
       if (response.ok) {
         const data = await response.json();
+        console.log("fetch user data from authContext", data);
 
         setUser(data.username);
         setRoles(data.roles);
@@ -51,7 +55,6 @@ export const AuthProvider = ({ children }) => {
         clearAuthData();
       }
     } catch (error) {
-      console.error("Error with retrieving user info");
       clearAuthData();
     } finally {
       setLoading(false);
@@ -65,7 +68,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("roles");
     localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("id");
+    localStorage.removeItem("userId");
   };
 
   return (

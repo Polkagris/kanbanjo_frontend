@@ -17,6 +17,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -39,35 +47,35 @@ const NewBoard = () => {
     setBoardData(boardData);
   };
 
-  // boardId må hentes fra owner som matcher med userId
-  // slå opp board med ownerId som matcher userId - trenger bare 1 kall
-
-  // henter ut ownerId
-
   const getExistingBoard = async () => {
     const boardData = await getBoardByOwnerId();
     console.log("getBoardByOwnerId - boardData:", boardData);
     setBoardData(boardData[0]);
   };
 
-  console.log("boardData: -----------------------", boardData);
-  console.log("taskName:", taskName);
-  console.log("user:", user);
-
-  const openTaskModal = () => {
-    setOpenModal(!openModal);
+  const handleCreateTask = async () => {
+    try {
+      await createTask(taskName, taskDescription, user?.name, boardData.id);
+      setTaskName("");
+      setTaskDescription("");
+      setOpenModal(false);
+      await getExistingBoard();
+    } catch (error) {
+      console.error("Failed to create task", error);
+    }
   };
 
-  // hente boardId fra user
+  // get board from user
   useEffect(() => {
-    refreshUser();
     getExistingBoard();
   }, []);
 
   const dialog = (
-    <Dialog>
+    <Dialog open={openModal}>
       <DialogTrigger asChild>
-        <Button variant="outline">Create Task</Button>
+        <Button variant="outline" onClick={() => setOpenModal(true)}>
+          Create Task
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -98,9 +106,7 @@ const NewBoard = () => {
           <Button
             type="button"
             variant="default"
-            onClick={() =>
-              createTask(taskName, taskDescription, user?.name, boardData.id)
-            }
+            onClick={() => handleCreateTask()}
           >
             Create
           </Button>
@@ -113,6 +119,19 @@ const NewBoard = () => {
       </DialogContent>
     </Dialog>
   );
+
+  const card = (task) => {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{task.name}</CardTitle>
+          <CardDescription>Description: {task.description}</CardDescription>
+        </CardHeader>
+        <CardContent>ID: {task.id}</CardContent>
+        <CardFooter>Participants: {task.participant}</CardFooter>
+      </Card>
+    );
+  };
 
   const board = boardData && (
     <Table>
@@ -131,7 +150,11 @@ const NewBoard = () => {
       <TableBody>
         <TableRow className="h-64">
           <TableCell className="border">
-            <div>{boardData?.tasks?.map((task) => task.name)}</div>
+            <div>
+              {boardData?.tasks?.map((task) => {
+                return card(task);
+              })}
+            </div>
             {dialog}
           </TableCell>
           <TableCell className="border"></TableCell>

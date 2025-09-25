@@ -6,9 +6,6 @@ import { useEffect } from "react";
 import { redirect } from "next/navigation";
 
 export const CreateBoardButton = () => {
-  /*   if (!isAuthenticated) {
-    return <div>Log in to create a new board</div>;
-  } */
   const { isAuthenticated, refreshUser, user, roles, loading } = useAuth();
 
   console.log("isAuthenticated i CreateButton:", isAuthenticated);
