@@ -34,6 +34,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { BoardSection } from "./components/BoardSection";
 
 const NewBoard = () => {
   const { isAuthenticated, refreshUser, user, roles, loading } = useAuth();
@@ -41,6 +42,7 @@ const NewBoard = () => {
   const [openModal, setOpenModal] = useState(false);
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
+  console.log("🚀 ~ NewBoard ~ boardData:", boardData);
 
   const createNewBoard = async (boardName) => {
     const boardData = await createBoard(boardName);
@@ -170,7 +172,19 @@ const NewBoard = () => {
         Create new board
       </Button>
       <h1>Your existing boards</h1>
-      {board}
+      {/* {board} */}
+      {boardData && (
+        <BoardSection
+          boardData={boardData}
+          handleCreateTask={handleCreateTask}
+          openModal={openModal}
+          setOpenModal={setOpenModal}
+          setTaskDescription={setTaskDescription}
+          setTaskName={setTaskName}
+          taskDescription={taskDescription}
+          taskName={taskName}
+        />
+      )}
     </div>
   );
 };
