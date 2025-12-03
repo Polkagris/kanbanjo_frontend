@@ -1,15 +1,15 @@
-export const registerNewUser = async (userName, password, email) => {
-  const url = "http://localhost:8080/api/user/register";
+export const loginUser = async (userName: string, password: string) => {
+  const url = "http://localhost:8080/api/user/login";
 
   const requestBody = {
     username: userName,
     password: password,
-    email: email,
   };
 
   try {
     const response = await fetch(url, {
       method: "POST",
+      credentials: "include",
       body: JSON.stringify(requestBody),
       headers: { "Content-Type": "application/json" },
     });
@@ -21,6 +21,6 @@ export const registerNewUser = async (userName, password, email) => {
     const data = await response.json();
     return data;
   } catch {
-    throw new Error("The register new user query failed.");
+    throw new Error("The login user query failed.");
   }
 };

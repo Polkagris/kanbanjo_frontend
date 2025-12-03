@@ -1,14 +1,44 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 
-const AuthContext = createContext({
+type Role = {
+  id: number;
+  name: string;
+};
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  roles: Role[];
+};
+
+type AuthContextType = {
+  isAuthenticated: boolean;
+  roles: Role[];
+  user: User | null;
+  loading: boolean;
+  refreshUser: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   roles: [],
   user: null,
   loading: true,
-  refreshUser: () => {},
+  refreshUser: async () => {},
 });
 
-export const AuthProvider = ({ children }) => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const userInfoUrl = "http://localhost:8080/api/user/me";
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);

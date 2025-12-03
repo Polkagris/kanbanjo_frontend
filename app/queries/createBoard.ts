@@ -1,4 +1,4 @@
-export const createBoard = async (boardName) => {
+export const createBoard = async (boardName: string) => {
   const URL = "http://localhost:8080/api/board";
 
   const requestBody = {

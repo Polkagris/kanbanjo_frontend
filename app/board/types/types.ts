@@ -1,5 +1,5 @@
 export type Board = {
-  id: number;
+  id: number | undefined;
   name: string;
   owner: Owner;
   participants: Participant[];
@@ -25,6 +25,13 @@ export type Participant = {
 export type Role = {
   id: number;
   name: string; // "ROLE_USER"
+};
+
+export type User = {
+  id: string;
+  name: string;
+  roles: Role[];
+  email: string;
 };
 
 export type Swimlane = {

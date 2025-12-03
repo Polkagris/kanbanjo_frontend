@@ -1,15 +1,22 @@
-export const getBoard = async (
-  taskName,
-  taskDescription,
-  taskParticipant,
-  boardId
+export const createTask = async (
+  taskName: string,
+  taskDescription: string,
+  taskParticipant: string | undefined,
+  boardId: number | undefined
 ) => {
-  const URL = `http://localhost:8080/api/board/${boardId}`;
+  const URL = `http://localhost:8080/api/task/create/${boardId}`;
+
+  const requestBody = {
+    name: taskName,
+    description: taskDescription,
+    participant: taskParticipant,
+  };
 
   try {
     const response = await fetch(URL, {
-      method: "GET",
+      method: "POST",
       credentials: "include",
+      body: JSON.stringify(requestBody),
       headers: { "Content-Type": "application/json" },
     });
     console.log("Response from task:", response);
