@@ -7,14 +7,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Task } from "../types/types";
+import { Button } from "@/components/ui/button";
+import { deleteTask } from "@/app/queries/deleteTask";
 
 interface TaskCardProps {
   task: Task;
+  deleteTaskHandler: (arg: number) => void;
 }
 
-export const TaskCard = ({ task }: TaskCardProps) => {
+export const TaskCard = ({ task, deleteTaskHandler }: TaskCardProps) => {
   return (
-    <Card>
+    <Card className="p-2">
       <CardHeader>
         <CardTitle>{task.name}</CardTitle>
         <CardDescription>Description: {task.description}</CardDescription>
@@ -23,6 +26,7 @@ export const TaskCard = ({ task }: TaskCardProps) => {
       <CardFooter>
         Participants: {task.participant?.username ?? "None"}
       </CardFooter>
+      <Button onClick={() => deleteTaskHandler(task.id)}>Delete</Button>
     </Card>
   );
 };

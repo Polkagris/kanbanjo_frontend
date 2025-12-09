@@ -17,6 +17,6 @@ export const getBoardByOwnerId = async () => {
     console.log("data from getBoardByOwnerId query:", data);
     return data;
   } catch {
-    throw new Error("Failed to get boards by owner Id");
+    console.error("Failed to get boards by owner Id");
   }
 };

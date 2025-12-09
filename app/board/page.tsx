@@ -6,9 +6,11 @@ import { getBoardByOwnerId } from "../queries/getBoardByOwnerId";
 import { createTask } from "../queries/createTask";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 import { BoardSection } from "./components/BoardSection";
 import { Board } from "./types/types";
+import { deleteTask } from "../queries/deleteTask";
 
 const NewBoard = () => {
   const { isAuthenticated, refreshUser, user, roles, loading } = useAuth();
@@ -42,6 +44,15 @@ const NewBoard = () => {
     }
   };
 
+  const deleteTaskHandler = async (taskId: number) => {
+    try {
+      const result = await deleteTask(taskId);
+      return result;
+    } finally {
+      await getExistingBoard();
+    }
+  };
+
   // get board from user
   useEffect(() => {
     getExistingBoard();
@@ -49,9 +60,15 @@ const NewBoard = () => {
 
   return (
     <div>
-      <Button onClick={() => createNewBoard("Arnes test board")}>
-        Create new board
-      </Button>
+      <div className="p-3">
+        <Button onClick={() => createNewBoard("Arnes test board")}>
+          Create new board
+        </Button>
+        <Button className="mx-2">
+          <Link href="/">Back</Link>
+        </Button>
+      </div>
+
       <h1>Your existing boards</h1>
       {boardData && (
         <BoardSection
@@ -63,6 +80,7 @@ const NewBoard = () => {
           setTaskName={setTaskName}
           taskDescription={taskDescription}
           taskName={taskName}
+          deleteTaskHandler={deleteTaskHandler}
         />
       )}
     </div>

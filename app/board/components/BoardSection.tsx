@@ -20,6 +20,7 @@ interface DialogProps {
   taskDescription: string;
   setTaskDescription: (arg: string) => void;
   handleCreateTask: () => void;
+  deleteTaskHandler: (arg: number) => void;
 }
 
 type BoardSectionProps = DialogProps & {
@@ -35,6 +36,7 @@ export const BoardSection = ({
   setTaskName,
   taskDescription,
   taskName,
+  deleteTaskHandler,
 }: BoardSectionProps) => {
   return (
     <Table>
@@ -55,7 +57,13 @@ export const BoardSection = ({
           <TableCell className="border">
             <div>
               {boardData?.tasks?.map((task) => {
-                return <TaskCard task={task} />;
+                return (
+                  <TaskCard
+                    task={task}
+                    key={task.id}
+                    deleteTaskHandler={deleteTaskHandler}
+                  />
+                );
               })}
             </div>
             <DialogModal
