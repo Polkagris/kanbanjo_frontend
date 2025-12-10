@@ -14,6 +14,7 @@ export const logoutUser = async () => {
     const data = await response.json();
     return data;
   } catch (error) {
-    throw new Error("Error with logout of user", error);
+    console.error("Error with logout of user", error);
+    throw new Error("Error with logout of user");
   }
 };

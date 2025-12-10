@@ -9,7 +9,7 @@ export const RegisterForm = () => {
   const [userName, setUserName] = useState("");
   const [userFromResponse, setUserFromResponse] = useState({});
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const data = await registerNewUser(userName, userPassword, userEmail);
