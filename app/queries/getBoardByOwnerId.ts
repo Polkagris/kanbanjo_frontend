@@ -9,6 +9,11 @@ export const getBoardByOwnerId = async () => {
     });
     console.log("Response from owner boards:", response);
 
+    if (response.status == 204) {
+      console.log("User has no existing boards.");
+      return [];
+    }
+
     if (!response.ok) {
       throw new Error("Failed to get boards by owner Id - bad response");
     }
@@ -18,5 +23,6 @@ export const getBoardByOwnerId = async () => {
     return data;
   } catch {
     console.error("Failed to get boards by owner Id");
+    return [];
   }
 };

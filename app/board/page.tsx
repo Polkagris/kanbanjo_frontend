@@ -29,6 +29,12 @@ const NewBoard = () => {
   const getExistingBoard = async () => {
     const boardData = await getBoardByOwnerId();
     console.log("getBoardByOwnerId - boardData:", boardData);
+
+    if (!boardData || boardData?.length == 0) {
+      setBoardData(null);
+      return;
+    }
+
     setBoardData(boardData[0]);
   };
 

@@ -46,20 +46,28 @@ export const DialogModal = ({
           </DialogDescription>
           <div className="flex flex-col items-center gap-2">
             <div className="flex w-full">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={taskName}
-                onChange={(e) => setTaskName(e.target.value)}
-              />
+              <div className="flex w-1/3">
+                <Label htmlFor="name">Name</Label>
+              </div>
+              <div className="flex w-full">
+                <Input
+                  id="name"
+                  value={taskName}
+                  onChange={(e) => setTaskName(e.target.value)}
+                />
+              </div>
             </div>
             <div className="flex w-full">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
-                value={taskDescription}
-                onChange={(e) => setTaskDescription(e.target.value)}
-              />
+              <div className="flex w-1/3">
+                <Label htmlFor="description">Description</Label>
+              </div>
+              <div className="flex w-full">
+                <Input
+                  id="description"
+                  value={taskDescription}
+                  onChange={(e) => setTaskDescription(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </DialogHeader>
