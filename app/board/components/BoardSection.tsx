@@ -11,6 +11,10 @@ import {
 import { Board } from "../types/types";
 import { DialogModal } from "./CreateTaskModal";
 import { TaskCard } from "./TaskCard";
+import { DndContext, useDroppable } from "@dnd-kit/core";
+import { useState } from "react";
+import { BoardColumn } from "./BoardColumn";
+import type { DragEndEvent } from "@dnd-kit/core";
 
 interface DialogProps {
   openModal: boolean;
@@ -38,48 +42,66 @@ export const BoardSection = ({
   taskName,
   deleteTaskHandler,
 }: BoardSectionProps) => {
+  const [isDropped, setIsDropped] = useState(false);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    if (event.over && event.over.id === "droppable") {
+      setIsDropped(true);
+    }
+  };
+
   return (
-    <Table>
-      <TableCaption>{boardData?.name ?? "No name found"}</TableCaption>
-      <TableHeader>
-        <TableRow>
-          {boardData?.swimlanes?.map((swimlane) => {
-            return (
-              <TableHead key={swimlane.id} className="w-[100px]">
-                {swimlane.name}
-              </TableHead>
-            );
-          })}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow className="h-64">
-          <TableCell className="border">
-            <div>
-              {boardData?.tasks?.map((task) => {
-                return (
-                  <TaskCard
-                    task={task}
-                    key={task.id}
-                    deleteTaskHandler={deleteTaskHandler}
-                  />
-                );
-              })}
-            </div>
-            <DialogModal
-              openModal={openModal}
-              setOpenModal={setOpenModal}
-              handleCreateTask={handleCreateTask}
-              setTaskDescription={setTaskDescription}
-              setTaskName={setTaskName}
-              taskDescription={taskDescription}
-              taskName={taskName}
-            />
-          </TableCell>
-          <TableCell className="border"></TableCell>
-          <TableCell className="border"></TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+    <DndContext onDragEnd={handleDragEnd}>
+      <Table>
+        <TableCaption>{boardData?.name ?? "No name found"}</TableCaption>
+        <TableHeader>
+          <TableRow>
+            {boardData?.swimlanes?.map((swimlane) => {
+              return (
+                <TableHead key={swimlane.id} className="w-[100px]">
+                  {swimlane.name}
+                </TableHead>
+              );
+            })}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow className="h-64">
+            {boardData?.swimlanes.map((swimlane) => {
+              return (
+                <BoardColumn
+                  key={swimlane.id}
+                  className="border"
+                  id={`swimlane-${swimlane.id}`}
+                  columnId={swimlane.id}
+                >
+                  {swimlane.tasks?.map((task) => {
+                    return (
+                      <TaskCard
+                        task={task}
+                        key={task.id}
+                        deleteTaskHandler={deleteTaskHandler}
+                        id={`task-${task.id}`}
+                      />
+                    );
+                  })}
+                  {swimlane.name == "todo" && (
+                    <DialogModal
+                      openModal={openModal}
+                      setOpenModal={setOpenModal}
+                      handleCreateTask={handleCreateTask}
+                      setTaskDescription={setTaskDescription}
+                      setTaskName={setTaskName}
+                      taskDescription={taskDescription}
+                      taskName={taskName}
+                    />
+                  )}
+                </BoardColumn>
+              );
+            })}
+          </TableRow>
+        </TableBody>
+      </Table>
+    </DndContext>
   );
 };
