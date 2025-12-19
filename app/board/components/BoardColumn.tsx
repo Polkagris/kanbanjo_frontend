@@ -3,7 +3,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { ReactNode } from "react";
 
 interface BoardColumnProps {
-  id: string;
+  id: number;
   className: string;
   children?: ReactNode;
   columnId: number;

@@ -11,6 +11,8 @@ import Link from "next/link";
 import { BoardSection } from "./components/BoardSection";
 import { Board } from "./types/types";
 import { deleteTask } from "../queries/deleteTask";
+import type { DragEndEvent } from "@dnd-kit/core";
+import { moveTask } from "../queries/moveTask";
 
 const NewBoard = () => {
   const { isAuthenticated, refreshUser, user, roles, loading } = useAuth();
@@ -18,6 +20,7 @@ const NewBoard = () => {
   const [openModal, setOpenModal] = useState(false);
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
+  const [isDropped, setIsDropped] = useState(false);
   console.log("🚀 ~ NewBoard ~ boardData:", boardData);
   console.log("🚀 ~ NewBoard ~ user:", user);
 
@@ -59,10 +62,45 @@ const NewBoard = () => {
     }
   };
 
+  const moveTaskHandler = async (taskId: number, swimlaneId: number) => {
+    try {
+      const result = await moveTask(taskId, swimlaneId);
+      return result;
+    } catch (error) {
+      console.error("Failed to move task", error);
+    }
+  };
+  // Det du vil ha er: optimistic update (oppdater UI umiddelbart), og så sync med backend.
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    console.log("DROPPED!2");
+    console.log("ACTIVE2:", active);
+    console.log("OVER2:", over);
+
+    const taskId = active.data.current?.taskId as number | undefined;
+    const toSwimlane = over?.id as number;
+    const fromSwimlane = active.data.current?.fromSwimlane as
+      | number
+      | undefined;
+
+    if (!taskId || toSwimlane == null) return;
+    if (fromSwimlane == toSwimlane) return;
+
+    // 1) optimistic UI update
+    // setBoardData((prev) => {});
+    
+    if (active.data.current?.fromSwimlane != over.id) {
+      moveTaskHandler(active.data.current?.taskId, over.id);
+      setIsDropped(true);
+    }
+  //};
+
   // get board from user
   useEffect(() => {
     getExistingBoard();
-  }, []);
+  }, [isDropped]);
 
   return (
     <div>
@@ -87,6 +125,8 @@ const NewBoard = () => {
           taskDescription={taskDescription}
           taskName={taskName}
           deleteTaskHandler={deleteTaskHandler}
+          moveTaskHandler={moveTaskHandler}
+          handleDragEnd={handleDragEnd}
         />
       )}
     </div>

@@ -3,7 +3,6 @@ import {
   Table,
   TableBody,
   TableCaption,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -25,6 +24,7 @@ interface DialogProps {
   setTaskDescription: (arg: string) => void;
   handleCreateTask: () => void;
   deleteTaskHandler: (arg: number) => void;
+  handleDragEnd: (event: DragEndEvent) => void;
 }
 
 type BoardSectionProps = DialogProps & {
@@ -41,14 +41,18 @@ export const BoardSection = ({
   taskDescription,
   taskName,
   deleteTaskHandler,
+  handleDragEnd,
 }: BoardSectionProps) => {
   const [isDropped, setIsDropped] = useState(false);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    if (event.over && event.over.id === "droppable") {
+  /*  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && over.id === "droppable") {
       setIsDropped(true);
+
+      // run move task query
     }
-  };
+  }; */
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
@@ -72,7 +76,7 @@ export const BoardSection = ({
                 <BoardColumn
                   key={swimlane.id}
                   className="border"
-                  id={`swimlane-${swimlane.id}`}
+                  id={swimlane.id}
                   columnId={swimlane.id}
                 >
                   {swimlane.tasks?.map((task) => {

@@ -50,3 +50,29 @@ export type Task = {
   createdAt: string | null;
   updatedAt: string | null;
 };
+
+export type TaskDto = {
+  id: number;
+  name: string;
+  description: string;
+  status: string | null;
+  priority: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  swimlaneId: number | null;
+  boardId: number | null;
+  participantId: number | null;
+};
+
+export type SwimlaneDto = {
+  id: number;
+  name: string;
+  tasks: TaskDto[];
+};
+
+export type BoardDto = {
+  id: number;
+  name: string;
+  taskCount: number;
+  swimlanes: SwimlaneDto[];
+};
