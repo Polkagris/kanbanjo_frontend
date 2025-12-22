@@ -44,6 +44,10 @@ export const BoardSection = ({
   handleDragEnd,
 }: BoardSectionProps) => {
   const [isDropped, setIsDropped] = useState(false);
+  console.log(
+    "🚀 ~ BoardSection ~ boardData FROM BOARD SECTION **********:",
+    boardData
+  );
 
   /*  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -71,7 +75,7 @@ export const BoardSection = ({
         </TableHeader>
         <TableBody>
           <TableRow className="h-64">
-            {boardData?.swimlanes.map((swimlane) => {
+            {boardData?.swimlanes?.map((swimlane) => {
               return (
                 <BoardColumn
                   key={swimlane.id}

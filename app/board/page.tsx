@@ -9,14 +9,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 import { BoardSection } from "./components/BoardSection";
-import { Board } from "./types/types";
+import { Board, BoardDto } from "./types/types";
 import { deleteTask } from "../queries/deleteTask";
 import type { DragEndEvent } from "@dnd-kit/core";
 import { moveTask } from "../queries/moveTask";
 
 const NewBoard = () => {
   const { isAuthenticated, refreshUser, user, roles, loading } = useAuth();
-  const [boardData, setBoardData] = useState<Board | null>(null);
+  const [boardData, setBoardData] = useState<BoardDto | null>(null);
   const [openModal, setOpenModal] = useState(false);
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
@@ -31,7 +31,10 @@ const NewBoard = () => {
 
   const getExistingBoard = async () => {
     const boardData = await getBoardByOwnerId();
-    console.log("getBoardByOwnerId - boardData:", boardData);
+    console.log(
+      "getBoardByOwnerId - boardData: 44444444444444444444444",
+      boardData
+    );
 
     if (!boardData || boardData?.length == 0) {
       setBoardData(null);
@@ -80,27 +83,109 @@ const NewBoard = () => {
     console.log("OVER2:", over);
 
     const taskId = active.data.current?.taskId as number | undefined;
-    const toSwimlane = over?.id as number;
-    const fromSwimlane = active.data.current?.fromSwimlane as
+    const toSwimlaneId = over?.id as number;
+    const fromSwimlaneId = active.data.current?.fromSwimlane as
       | number
       | undefined;
 
-    if (!taskId || toSwimlane == null) return;
-    if (fromSwimlane == toSwimlane) return;
+    if (!taskId || toSwimlaneId == null) return;
+    if (fromSwimlaneId == toSwimlaneId) return;
 
-    // 1) optimistic UI update
-    // setBoardData((prev) => {});
-    
-    if (active.data.current?.fromSwimlane != over.id) {
-      moveTaskHandler(active.data.current?.taskId, over.id);
-      setIsDropped(true);
-    }
-  //};
+    // optimistic UI update
+    setBoardData((prev) => {
+      let movedTask = null;
+      // find swimlane with dragged task
+      const originalSwimlane = prev?.swimlanes.filter((swimlane) =>
+        swimlane.tasks?.find((task) => {
+          return task.id == taskId;
+        })
+      )?.[0];
+
+      // with more data
+      const originalSwimlaneFull = prev?.swimlanes.filter((swimlane) => {
+        return swimlane.id == fromSwimlaneId;
+      })?.[0];
+
+      console.log(
+        "🚀 ~ handleDragEnd ~ originalSwimlaneNoMovedTask: $$$$$$$$$$$",
+        originalSwimlaneFull
+      );
+
+      // remove task from original swimlane
+      const originalSwimlaneNoMovedTask = {
+        ...originalSwimlaneFull,
+        tasks: originalSwimlaneFull?.tasks?.filter((task) => {
+          return task.id != taskId ? task : null;
+        }),
+      };
+      console.log(
+        "🚀 ~ handleDragEnd ~ ogSwimlaneNoTask: ////////////////",
+        originalSwimlaneNoMovedTask
+      );
+
+      // task that was moved
+      const draggedTask = originalSwimlane?.tasks?.find(
+        (task) => task.id == taskId
+      );
+      console.log("🚀 ~ handleDragEnd ~ draggedTask: ##########", draggedTask);
+      console.log(
+        "🚀 ~ handleDragEnd ~ originalSwimlane: ¤¤¤¤¤¤¤¤",
+        originalSwimlane
+      );
+
+      movedTask = draggedTask;
+      console.log("🚀 ~ handleDragEnd ~ prev: !!!!!!!!!", prev);
+
+      // Fjerne den fra gammel swimlane
+
+      // Oppdatere swimlaneId på tasken
+      if (!movedTask) return;
+      movedTask = {
+        ...movedTask,
+        swimlaneId: toSwimlaneId,
+      };
+      console.log("🚀 ~ handleDragEnd ~ movedTask: ==========", movedTask);
+
+      // get new swimlane
+      const newSwimlane = prev?.swimlanes.filter((swimlane) => {
+        return swimlane.id == toSwimlaneId;
+      })?.[0];
+      console.log(
+        "🚀 ~ handleDragEnd ~ newSwimlane - TO SWIMLANE ^^^^^^^^^",
+        newSwimlane
+      );
+
+      // add movedTask to new swimlane
+      // make sure it doesnt happen twice
+      if (!newSwimlane?.tasks.some((task) => task.id == movedTask.id))
+        newSwimlane?.tasks.push(movedTask);
+      console.log("🚀 ~ handleDragEnd ~ newSwimlane: £££££££££", newSwimlane);
+
+      // add task to new swimlane, remove it from old
+      const boardWithUpdatedSwimlanes = prev?.swimlanes.map((swimlane) => {
+        if (!swimlane.id) return;
+        if (swimlane.id == fromSwimlaneId) {
+          return originalSwimlaneNoMovedTask;
+        } else if (swimlane.id == toSwimlaneId) {
+          return newSwimlane;
+        } else {
+          return swimlane;
+        }
+      });
+      console.log(
+        "🚀 ~ handleDragEnd ~ boardWithUpdatedSwimlanes: 777777777777777",
+        boardWithUpdatedSwimlanes
+      );
+      // return new board state
+      return { ...prev, swimlanes: boardWithUpdatedSwimlanes };
+    });
+  };
 
   // get board from user
   useEffect(() => {
     getExistingBoard();
-  }, [isDropped]);
+    console.log("BOARD data inside useeffect: 3333333333333333", boardData);
+  }, []);
 
   return (
     <div>
