@@ -93,6 +93,7 @@ const NewBoard = () => {
 
     // optimistic UI update
     setBoardData((prev) => {
+      if (!prev) return prev;
       let movedTask = null;
       // find swimlane with dragged task
       const originalSwimlane = prev?.swimlanes.filter((swimlane) =>
@@ -114,9 +115,7 @@ const NewBoard = () => {
       // remove task from original swimlane
       const originalSwimlaneNoMovedTask = {
         ...originalSwimlaneFull,
-        tasks: originalSwimlaneFull?.tasks?.filter((task) => {
-          return task.id != taskId ? task : null;
-        }),
+        tasks: originalSwimlaneFull?.tasks?.filter((task) => task.id != taskId),
       };
       console.log(
         "🚀 ~ handleDragEnd ~ ogSwimlaneNoTask: ////////////////",
@@ -155,19 +154,25 @@ const NewBoard = () => {
         newSwimlane
       );
 
-      // add movedTask to new swimlane
-      // make sure it doesnt happen twice
-      if (!newSwimlane?.tasks.some((task) => task.id == movedTask.id))
-        newSwimlane?.tasks.push(movedTask);
-      console.log("🚀 ~ handleDragEnd ~ newSwimlane: £££££££££", newSwimlane);
+      // add movedTask to new swimlane without pushing, wich will mutate prev state
+      const newSwimlaneWithMovedTask = {
+        ...newSwimlane,
+        tasks: newSwimlane?.tasks.some((task) => task.id == movedTask.id)
+          ? newSwimlane?.tasks
+          : [...(newSwimlane?.tasks ?? []), movedTask],
+      };
+      console.log(
+        "🚀 ~ handleDragEnd ~ newSwimlaneWithMovedTask: 5555555555555555",
+        newSwimlaneWithMovedTask
+      );
 
       // add task to new swimlane, remove it from old
       const boardWithUpdatedSwimlanes = prev?.swimlanes.map((swimlane) => {
-        if (!swimlane.id) return;
+        if (!swimlane.id) return swimlane;
         if (swimlane.id == fromSwimlaneId) {
           return originalSwimlaneNoMovedTask;
         } else if (swimlane.id == toSwimlaneId) {
-          return newSwimlane;
+          return newSwimlaneWithMovedTask;
         } else {
           return swimlane;
         }
@@ -176,8 +181,28 @@ const NewBoard = () => {
         "🚀 ~ handleDragEnd ~ boardWithUpdatedSwimlanes: 777777777777777",
         boardWithUpdatedSwimlanes
       );
+      console.log("PREV £$NOK:", prev);
       // return new board state
       return { ...prev, swimlanes: boardWithUpdatedSwimlanes };
+    });
+
+    // update backend, roll-back UI changes on fail
+    moveTaskHandler(taskId, toSwimlaneId).catch((error) => {
+      console.log("The move task query failed", error);
+      setBoardData((prev) => {
+        // guard
+        if (!prev) return prev;
+        // Finne tasken i “to”-swimlane (der vi optimistisk la den)
+        const taskToRemove = "";
+
+        // Fjerne den fra “to”-swimlane
+
+        // Oppdatere swimlaneId tilbake til fromSwimlaneId
+
+        // Legge den tilbake i “from”-swimlane
+
+        // Returnere ny immutable state
+      });
     });
   };
 
