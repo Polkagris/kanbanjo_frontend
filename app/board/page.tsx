@@ -67,6 +67,7 @@ const NewBoard = () => {
 
   const moveTaskHandler = async (taskId: number, swimlaneId: number) => {
     try {
+      // throw new Error("Forced error for testing");
       const result = await moveTask(taskId, swimlaneId);
       return result;
     } catch (error) {
@@ -187,21 +188,96 @@ const NewBoard = () => {
     });
 
     // update backend, roll-back UI changes on fail
+    // Promise.reject(new Error("Force rollback")).catch((error) => {
     moveTaskHandler(taskId, toSwimlaneId).catch((error) => {
+      // Promise.reject(new Error("Force rollback")).catch((error) => {
       console.log("The move task query failed", error);
       setBoardData((prev) => {
         // guard
         if (!prev) return prev;
-        // Finne tasken i “to”-swimlane (der vi optimistisk la den)
-        const taskToRemove = "";
+        console.log("PREV BEFORE THAT AGAIN AGIN - - - - - -", prev);
+        // 1) Finn "to"-swimlane (der tasken ligger etter optimistic update)
+        const toSwimlaneWithNewTask = prev.swimlanes?.find(
+          (swimlane) => swimlane.id == toSwimlaneId
+        );
+        console.log(
+          "🚀 ~ moveTaskHandler ~ toSwimlaneWithNewTask: 11111111111111",
+          toSwimlaneWithNewTask
+        );
+        console.log("PREV BEFORE THAT AGAIN - - - - - -", prev);
 
-        // Fjerne den fra “to”-swimlane
+        // 2) Finn tasken vi skal rulle tilbake
+        let taskToRollback = toSwimlaneWithNewTask?.tasks?.find(
+          (task) => task.id == taskId
+        );
+        console.log(
+          "🚀 ~ handleDragEnd ~ taskToRollback: 222222222222222222",
+          taskToRollback
+        );
+        console.log("PREV BEFORE THAT - - - - - -", prev);
 
-        // Oppdatere swimlaneId tilbake til fromSwimlaneId
+        // 3) Fjern tasken fra "to"-swimlane
+        // guard
+        if (!toSwimlaneWithNewTask) return prev;
 
-        // Legge den tilbake i “from”-swimlane
+        const toSwimlaneWithoutNewTask = {
+          ...toSwimlaneWithNewTask,
+          tasks: toSwimlaneWithNewTask?.tasks?.filter(
+            (task) => task.id != taskToRollback?.id
+          ),
+        };
+        console.log(
+          "🚀 ~ handleDragEnd ~ toSwimlaneWithoutNewTask: ????????????",
+          toSwimlaneWithoutNewTask
+        );
 
-        // Returnere ny immutable state
+        // 4) Lag "restored" task (sett swimlaneId tilbake)
+        if (!taskToRollback || fromSwimlaneId == null) return prev;
+        taskToRollback = { ...taskToRollback, swimlaneId: fromSwimlaneId };
+
+        console.log("PREV BEFORE - - - - - -", prev);
+
+        // 5) Finn "from"-swimlane (der tasken kom fra)
+        const fromSwimlane = prev.swimlanes?.find(
+          (swimlane) => swimlane.id == fromSwimlaneId
+        );
+        console.log("PREV AFTER - - - - - -", prev);
+        console.log(
+          "🚀 ~ handleDragEnd ~ fromSwimlane <<<<<<<<<<<<<:",
+          fromSwimlane
+        );
+
+        // 6) Legg tasken tilbake i "from"-swimlane
+        const fromSwimlaneWithOldTask = {
+          ...fromSwimlane,
+          tasks: fromSwimlane?.tasks?.some(
+            (task) => task.id == taskToRollback.id
+          )
+            ? fromSwimlane?.tasks
+            : [...(fromSwimlane?.tasks ?? []), taskToRollback],
+        };
+        console.log(
+          "🚀 ~ handleDragEnd ~ fromSwimlaneWithOldTask: ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ",
+          fromSwimlaneWithOldTask
+        );
+        // 7) Update rolled back state
+        const swimlanesWithRolledbackTask = prev.swimlanes?.map((swimlane) => {
+          if (!swimlane.id) return swimlane;
+          // for old swimlane -> return fromSwimlaneWithOldTask
+          // for new swimlane -> return toSwimlaneWithoutNewTask
+          if (swimlane.id == fromSwimlaneId) {
+            return fromSwimlaneWithOldTask;
+          } else if (swimlane.id == toSwimlaneId) {
+            return toSwimlaneWithoutNewTask;
+          } else {
+            return swimlane;
+          }
+        });
+        console.log(
+          "🚀 ~ handleDragEnd ~ swimlanesWithRolledbackTask: ???????????????",
+          swimlanesWithRolledbackTask
+        );
+        return { ...prev, swimlanes: swimlanesWithRolledbackTask };
       });
     });
   };
