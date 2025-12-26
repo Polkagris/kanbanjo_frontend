@@ -97,14 +97,14 @@ const NewBoard = () => {
       if (!prev) return prev;
       let movedTask = null;
       // find swimlane with dragged task
-      const originalSwimlane = prev?.swimlanes.filter((swimlane) =>
+      const originalSwimlane = prev.swimlanes.filter((swimlane) =>
         swimlane.tasks?.find((task) => {
           return task.id == taskId;
         })
       )?.[0];
 
       // with more data
-      const originalSwimlaneFull = prev?.swimlanes.filter((swimlane) => {
+      const originalSwimlaneFull = prev.swimlanes.filter((swimlane) => {
         return swimlane.id == fromSwimlaneId;
       })?.[0];
 
@@ -112,6 +112,7 @@ const NewBoard = () => {
         "🚀 ~ handleDragEnd ~ originalSwimlaneNoMovedTask: $$$$$$$$$$$",
         originalSwimlaneFull
       );
+      if (!originalSwimlaneFull) return prev;
 
       // remove task from original swimlane
       const originalSwimlaneNoMovedTask = {
@@ -127,6 +128,7 @@ const NewBoard = () => {
       const draggedTask = originalSwimlane?.tasks?.find(
         (task) => task.id == taskId
       );
+      if (!draggedTask) return prev;
       console.log("🚀 ~ handleDragEnd ~ draggedTask: ##########", draggedTask);
       console.log(
         "🚀 ~ handleDragEnd ~ originalSwimlane: ¤¤¤¤¤¤¤¤",
@@ -139,7 +141,7 @@ const NewBoard = () => {
       // Fjerne den fra gammel swimlane
 
       // Oppdatere swimlaneId på tasken
-      if (!movedTask) return;
+      if (!movedTask) return prev;
       movedTask = {
         ...movedTask,
         swimlaneId: toSwimlaneId,
@@ -147,20 +149,21 @@ const NewBoard = () => {
       console.log("🚀 ~ handleDragEnd ~ movedTask: ==========", movedTask);
 
       // get new swimlane
-      const newSwimlane = prev?.swimlanes.filter((swimlane) => {
+      const newSwimlane = prev.swimlanes.filter((swimlane) => {
         return swimlane.id == toSwimlaneId;
       })?.[0];
       console.log(
         "🚀 ~ handleDragEnd ~ newSwimlane - TO SWIMLANE ^^^^^^^^^",
         newSwimlane
       );
+      if (!newSwimlane) return prev;
 
       // add movedTask to new swimlane without pushing, wich will mutate prev state
       const newSwimlaneWithMovedTask = {
         ...newSwimlane,
-        tasks: newSwimlane?.tasks.some((task) => task.id == movedTask.id)
-          ? newSwimlane?.tasks
-          : [...(newSwimlane?.tasks ?? []), movedTask],
+        tasks: newSwimlane.tasks.some((task) => task.id == movedTask.id)
+          ? newSwimlane.tasks
+          : [...(newSwimlane.tasks ?? []), movedTask],
       };
       console.log(
         "🚀 ~ handleDragEnd ~ newSwimlaneWithMovedTask: 5555555555555555",
@@ -168,7 +171,7 @@ const NewBoard = () => {
       );
 
       // add task to new swimlane, remove it from old
-      const boardWithUpdatedSwimlanes = prev?.swimlanes.map((swimlane) => {
+      const boardWithUpdatedSwimlanes = prev.swimlanes.map((swimlane) => {
         if (!swimlane.id) return swimlane;
         if (swimlane.id == fromSwimlaneId) {
           return originalSwimlaneNoMovedTask;
@@ -241,6 +244,8 @@ const NewBoard = () => {
         const fromSwimlane = prev.swimlanes?.find(
           (swimlane) => swimlane.id == fromSwimlaneId
         );
+
+        if (!fromSwimlane) return prev;
         console.log("PREV AFTER - - - - - -", prev);
         console.log(
           "🚀 ~ handleDragEnd ~ fromSwimlane <<<<<<<<<<<<<:",
@@ -250,18 +255,18 @@ const NewBoard = () => {
         // 6) Legg tasken tilbake i "from"-swimlane
         const fromSwimlaneWithOldTask = {
           ...fromSwimlane,
-          tasks: fromSwimlane?.tasks?.some(
+          tasks: fromSwimlane.tasks?.some(
             (task) => task.id == taskToRollback.id
           )
-            ? fromSwimlane?.tasks
-            : [...(fromSwimlane?.tasks ?? []), taskToRollback],
+            ? fromSwimlane.tasks
+            : [...(fromSwimlane.tasks ?? []), taskToRollback],
         };
         console.log(
           "🚀 ~ handleDragEnd ~ fromSwimlaneWithOldTask: ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ",
           fromSwimlaneWithOldTask
         );
         // 7) Update rolled back state
-        const swimlanesWithRolledbackTask = prev.swimlanes?.map((swimlane) => {
+        const swimlanesWithRolledbackTask = prev.swimlanes.map((swimlane) => {
           if (!swimlane.id) return swimlane;
           // for old swimlane -> return fromSwimlaneWithOldTask
           // for new swimlane -> return toSwimlaneWithoutNewTask

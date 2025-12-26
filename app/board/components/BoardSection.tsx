@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Board } from "../types/types";
+import { Board, BoardDto } from "../types/types";
 import { DialogModal } from "./CreateTaskModal";
 import { TaskCard } from "./TaskCard";
 import { DndContext, useDroppable } from "@dnd-kit/core";
@@ -28,7 +28,8 @@ interface DialogProps {
 }
 
 type BoardSectionProps = DialogProps & {
-  boardData: Board | null;
+  boardData: BoardDto | null;
+  moveTaskHandler: (arg1: number, arg2: number) => void;
 };
 
 export const BoardSection = ({
