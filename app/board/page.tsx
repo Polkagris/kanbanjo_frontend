@@ -85,59 +85,45 @@ const NewBoard = () => {
       | number
       | undefined;
 
-    if (!taskId || toSwimlaneId == null) return;
+    if (taskId == null) return;
+    if (toSwimlaneId == null) return;
+    if (fromSwimlaneId == null) return;
     if (fromSwimlaneId == toSwimlaneId) return;
 
     // optimistic UI update
     setBoardData((prev) => {
       if (!prev) return prev;
-      let movedTask = null;
-      // find swimlane with dragged task
-      const originalSwimlane = prev.swimlanes.filter((swimlane) =>
-        swimlane.tasks?.find((task) => {
-          return task.id == taskId;
-        })
-      )?.[0];
+      // find swimlane with moved task
+      const originalSwimlane = prev.swimlanes.find((swimlane) =>
+        swimlane.tasks?.some((task) => task.id === taskId)
+      );
 
-      // with more data
-      const originalSwimlaneFull = prev.swimlanes.filter((swimlane) => {
-        return swimlane.id == fromSwimlaneId;
-      })?.[0];
-
-      if (!originalSwimlaneFull) return prev;
+      if (!originalSwimlane) return prev;
 
       // remove task from original swimlane
       const originalSwimlaneNoMovedTask = {
-        ...originalSwimlaneFull,
-        tasks: originalSwimlaneFull?.tasks?.filter((task) => task.id != taskId),
+        ...originalSwimlane,
+        tasks: originalSwimlane.tasks?.filter((task) => task.id !== taskId),
       };
 
       // task that was moved
-      const draggedTask = originalSwimlane?.tasks?.find(
-        (task) => task.id == taskId
+      const draggedTask = originalSwimlane.tasks?.find(
+        (task) => task.id === taskId
       );
       if (!draggedTask) return prev;
 
-      movedTask = draggedTask;
+      const movedTask = { ...draggedTask, swimlaneId: toSwimlaneId };
 
-      // Oppdatere swimlaneId på tasken
-      if (!movedTask) return prev;
-      movedTask = {
-        ...movedTask,
-        swimlaneId: toSwimlaneId,
-      };
-
-      // get new swimlane
-      const newSwimlane = prev.swimlanes.filter((swimlane) => {
-        return swimlane.id == toSwimlaneId;
-      })?.[0];
+      const newSwimlane = prev.swimlanes.find(
+        (swimlane) => swimlane.id === toSwimlaneId
+      );
 
       if (!newSwimlane) return prev;
 
       // add movedTask to new swimlane without pushing, wich will mutate prev state
       const newSwimlaneWithMovedTask = {
         ...newSwimlane,
-        tasks: newSwimlane.tasks.some((task) => task.id == movedTask.id)
+        tasks: newSwimlane.tasks.some((task) => task.id === movedTask.id)
           ? newSwimlane.tasks
           : [...(newSwimlane.tasks ?? []), movedTask],
       };
@@ -145,9 +131,9 @@ const NewBoard = () => {
       // add task to new swimlane, remove it from old
       const boardWithUpdatedSwimlanes = prev.swimlanes.map((swimlane) => {
         if (!swimlane.id) return swimlane;
-        if (swimlane.id == fromSwimlaneId) {
+        if (swimlane.id === fromSwimlaneId) {
           return originalSwimlaneNoMovedTask;
-        } else if (swimlane.id == toSwimlaneId) {
+        } else if (swimlane.id === toSwimlaneId) {
           return newSwimlaneWithMovedTask;
         } else {
           return swimlane;
