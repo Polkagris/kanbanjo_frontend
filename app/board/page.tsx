@@ -94,23 +94,29 @@ const NewBoard = () => {
     setBoardData((prev) => {
       if (!prev) return prev;
       // find swimlane with moved task
-      const originalSwimlane = prev.swimlanes.find((swimlane) =>
-        swimlane.tasks?.some((task) => task.id === taskId)
-      );
+      let originalSwimlane: BoardDto["swimlanes"][number] | undefined;
+      let draggedTask:
+        | BoardDto["swimlanes"][number]["tasks"][number]
+        | undefined;
 
-      if (!originalSwimlane) return prev;
+      for (const swimlane of prev.swimlanes) {
+        // find moved task
+        const task = swimlane.tasks?.find((task) => task.id === taskId);
+        // if moved task is found set corresponding swimlane and task
+        if (task) {
+          originalSwimlane = swimlane;
+          draggedTask = task;
+          break;
+        }
+      }
+
+      if (!draggedTask || !originalSwimlane) return prev;
 
       // remove task from original swimlane
       const originalSwimlaneNoMovedTask = {
         ...originalSwimlane,
         tasks: originalSwimlane.tasks?.filter((task) => task.id !== taskId),
       };
-
-      // task that was moved
-      const draggedTask = originalSwimlane.tasks?.find(
-        (task) => task.id === taskId
-      );
-      if (!draggedTask) return prev;
 
       const movedTask = { ...draggedTask, swimlaneId: toSwimlaneId };
 
