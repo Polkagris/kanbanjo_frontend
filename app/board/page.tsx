@@ -13,6 +13,8 @@ import { Board, BoardDto } from "./types/types";
 import { deleteTask } from "../queries/deleteTask";
 import type { DragEndEvent } from "@dnd-kit/core";
 import { moveTask } from "../queries/moveTask";
+import { optimisticUpdateHandler } from "./utils/optimisticUpdateHandler";
+import { rollbackOnOptimisticUpdateFailHandler } from "./utils/rollbackOnOptimisticUpdateFailHandler";
 
 const NewBoard = () => {
   const { isAuthenticated, refreshUser, user, roles, loading } = useAuth();
@@ -31,10 +33,6 @@ const NewBoard = () => {
 
   const getExistingBoard = async () => {
     const boardData = await getBoardByOwnerId();
-    console.log(
-      "getBoardByOwnerId - boardData: 44444444444444444444444",
-      boardData
-    );
 
     if (!boardData || boardData?.length == 0) {
       setBoardData(null);
@@ -74,7 +72,8 @@ const NewBoard = () => {
       console.error("Failed to move task", error);
     }
   };
-  // Det du vil ha er: optimistic update (oppdater UI umiddelbart), og så sync med backend.
+
+  // Optimistic UI update - frontend change, then backend update
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
@@ -93,123 +92,26 @@ const NewBoard = () => {
     // optimistic UI update
     setBoardData((prev) => {
       if (!prev) return prev;
-      // find swimlane with moved task
-      let originalSwimlane: BoardDto["swimlanes"][number] | undefined;
-      let draggedTask:
-        | BoardDto["swimlanes"][number]["tasks"][number]
-        | undefined;
 
-      for (const swimlane of prev.swimlanes) {
-        // find moved task
-        const task = swimlane.tasks?.find((task) => task.id === taskId);
-        // if moved task is found set corresponding swimlane and task
-        if (task) {
-          originalSwimlane = swimlane;
-          draggedTask = task;
-          break;
-        }
-      }
-
-      if (!draggedTask || !originalSwimlane) return prev;
-
-      // remove task from original swimlane
-      const originalSwimlaneNoMovedTask = {
-        ...originalSwimlane,
-        tasks: originalSwimlane.tasks?.filter((task) => task.id !== taskId),
-      };
-
-      const movedTask = { ...draggedTask, swimlaneId: toSwimlaneId };
-
-      const newSwimlane = prev.swimlanes.find(
-        (swimlane) => swimlane.id === toSwimlaneId
+      return optimisticUpdateHandler(
+        prev,
+        taskId,
+        toSwimlaneId,
+        fromSwimlaneId
       );
-
-      if (!newSwimlane) return prev;
-
-      // add movedTask to new swimlane without pushing, wich will mutate prev state
-      const newSwimlaneWithMovedTask = {
-        ...newSwimlane,
-        tasks: newSwimlane.tasks.some((task) => task.id === movedTask.id)
-          ? newSwimlane.tasks
-          : [...(newSwimlane.tasks ?? []), movedTask],
-      };
-
-      // add task to new swimlane, remove it from old
-      const boardWithUpdatedSwimlanes = prev.swimlanes.map((swimlane) => {
-        if (!swimlane.id) return swimlane;
-        if (swimlane.id === fromSwimlaneId) {
-          return originalSwimlaneNoMovedTask;
-        } else if (swimlane.id === toSwimlaneId) {
-          return newSwimlaneWithMovedTask;
-        } else {
-          return swimlane;
-        }
-      });
-
-      // return new board state
-      return { ...prev, swimlanes: boardWithUpdatedSwimlanes };
     });
 
-    // update backend, roll-back UI changes on fail
+    // update backend, roll-back UI changes on optimistic update fail
     moveTaskHandler(taskId, toSwimlaneId).catch((error) => {
       setBoardData((prev) => {
         if (!prev) return prev;
-        // 1) Finn "to"-swimlane (der tasken ligger etter optimistic update)
-        const toSwimlaneWithNewTask = prev.swimlanes?.find(
-          (swimlane) => swimlane.id == toSwimlaneId
+
+        return rollbackOnOptimisticUpdateFailHandler(
+          prev,
+          taskId,
+          toSwimlaneId,
+          fromSwimlaneId
         );
-
-        // 2) Finn tasken vi skal rulle tilbake
-        let taskToRollback = toSwimlaneWithNewTask?.tasks?.find(
-          (task) => task.id == taskId
-        );
-
-        // 3) Fjern tasken fra "to"-swimlane
-        if (!toSwimlaneWithNewTask) return prev;
-
-        const toSwimlaneWithoutNewTask = {
-          ...toSwimlaneWithNewTask,
-          tasks: toSwimlaneWithNewTask?.tasks?.filter(
-            (task) => task.id != taskToRollback?.id
-          ),
-        };
-
-        // 4) Lag "restored" task (sett swimlaneId tilbake)
-        if (!taskToRollback || fromSwimlaneId == null) return prev;
-        taskToRollback = { ...taskToRollback, swimlaneId: fromSwimlaneId };
-
-        // 5) Finn "from"-swimlane (der tasken kom fra)
-        const fromSwimlane = prev.swimlanes?.find(
-          (swimlane) => swimlane.id == fromSwimlaneId
-        );
-
-        if (!fromSwimlane) return prev;
-
-        // 6) Legg tasken tilbake i "from"-swimlane
-        const fromSwimlaneWithOldTask = {
-          ...fromSwimlane,
-          tasks: fromSwimlane.tasks?.some(
-            (task) => task.id == taskToRollback.id
-          )
-            ? fromSwimlane.tasks
-            : [...(fromSwimlane.tasks ?? []), taskToRollback],
-        };
-
-        // 7) Update rolled back state
-        const swimlanesWithRolledbackTask = prev.swimlanes.map((swimlane) => {
-          if (!swimlane.id) return swimlane;
-          // for old swimlane -> return fromSwimlaneWithOldTask
-          // for new swimlane -> return toSwimlaneWithoutNewTask
-          if (swimlane.id == fromSwimlaneId) {
-            return fromSwimlaneWithOldTask;
-          } else if (swimlane.id == toSwimlaneId) {
-            return toSwimlaneWithoutNewTask;
-          } else {
-            return swimlane;
-          }
-        });
-
-        return { ...prev, swimlanes: swimlanesWithRolledbackTask };
       });
     });
   };
@@ -217,7 +119,6 @@ const NewBoard = () => {
   // get board from user
   useEffect(() => {
     getExistingBoard();
-    console.log("BOARD data inside useeffect: 3333333333333333", boardData);
   }, []);
 
   return (
